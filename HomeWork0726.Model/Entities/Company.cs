@@ -11,7 +11,7 @@ namespace HomeWork0726.Model.Entities
         public string Name { get; set; }
         public DateTime CreateTime { get; set; }
         public int CreatorId { get; set; }
-        public int LastModifierId { get; set; }
-        public DateTime LastModifyTime { get; set; }
+        public int? LastModifierId { get; set; }
+        public DateTime? LastModifyTime { get; set; }
     }
 }
