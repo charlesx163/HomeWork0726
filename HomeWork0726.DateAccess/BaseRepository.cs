@@ -52,7 +52,7 @@ namespace HomeWork0726.DateAccess
             string columnString = string.Join(",", type.GetProperties().Select(p => $"[{p.GetColumnName()}]"));
             string sql = $"select {columnString} from [{type.Name}]";
             List<T> list = new List<T>();
-            using (SqlConnection conn=new SqlConnection(ConnectionString))
+            using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
                 SqlCommand comm = new SqlCommand(sql, conn);
                 conn.Open();
@@ -62,8 +62,31 @@ namespace HomeWork0726.DateAccess
             return list;
         }
 
+        /// <summary>
+        /// update data by Id
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="t"></param>
+        public void Update<T>(T t) where T:BaseModel
+        {
+            Type type = typeof(T);
+            var properties = type.GetProperties().Where(p => !p.Name.Equals("Id"));
+            var paras = properties.Select(p => new SqlParameter($"@{p.GetColumnName()}", p.GetValue(t) ?? DBNull.Value));
+            string ColumnName = string.Join(",", properties.Select(p => $"[{p.GetColumnName()}]=@{p.GetColumnName()}"));
+            string sql = $"UPDATE [{type.Name}] SET {ColumnName} where Id={t.Id}";
+            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            {
+                SqlCommand comm = new SqlCommand(sql, conn);
+                comm.Parameters.AddRange(paras.ToArray());
+                conn.Open();
+                var i = comm.ExecuteNonQuery();
+                if (i == 0)
+                    throw new Exception("the data does not exeit in the database");
+            }
+        }
+
         #region
-        private List<T> ReaderToList<T>(IDataReader reader) where T:BaseModel
+        private List<T> ReaderToList<T>(IDataReader reader) where T : BaseModel
         {
             Type type = typeof(T);
             List<T> list = new List<T>();
@@ -72,7 +95,10 @@ namespace HomeWork0726.DateAccess
                 T t = (T)Activator.CreateInstance(type);
                 foreach (var prop in type.GetProperties())
                 {
-                    prop.SetValue(t, reader[prop.GetColumnName()]);
+                    object value = reader[prop.GetColumnName()];
+                    if (value is DBNull)
+                        value = null;
+                    prop.SetValue(t, value);
                 }
                 list.Add(t);
             }

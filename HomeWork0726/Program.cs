@@ -19,14 +19,20 @@ namespace HomeWork0726
                 var _Configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json", true, true).Build();
                 var conn = _Configuration.GetConnectionString("Study");
                 BaseRepository baseRepository = new BaseRepository();
-                //Company c = baseRepository.Find<Company>(1);
-                List<User> users = baseRepository.FindAll<User>();
+                Company c = baseRepository.Find<Company>(1);
+                //c.Name = "Honda";
+                //baseRepository.Update<Company>(c);
             }
             catch(Exception e)
             {
                 Console.WriteLine(e);
             }
            
+        }
+
+        private static void Show<T>(T t)
+        {
+            //显示中文名称
         }
     }
 }
