@@ -23,9 +23,14 @@ namespace HomeWork0726.DateAccess
         public T Find<T>(int id) where T : BaseModel
         {
             Type type = typeof(T);
+            #region 使用泛型缓存之前
             //string columnString = string.Join(",", type.GetProperties().Select(p => $"[{p.Name}]"));mdoel与数据库实体一致不用使用特性
-            string columnString = string.Join(",", type.GetProperties().Select(p => $"[{p.GetColumnName()}]")); //mdoel字段与数据库实体一致,使用特性
-            string sql = $"select {columnString} from [{type.Name}] where Id={id}";
+            //string columnString = string.Join(",", type.GetProperties().Select(p => $"[{p.GetColumnName()}]")); //mdoel字段与数据库实体一致,使用特性
+            //string sql = $"select {columnString} from [{type.Name}] where Id={id}";
+            #endregion
+            #region 使用泛型缓存之后
+            string sql = $"{GenericSqlHelper<T>.FindSingleSql}{id}";
+            #endregion
             T t = (T)Activator.CreateInstance(type);
             using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
@@ -46,9 +51,21 @@ namespace HomeWork0726.DateAccess
         public List<T> FindAll<T>() where T : BaseModel
         {
             Type type = typeof(T);
-            //string columnString = string.Join(",", type.GetProperties().Select(p => $"[{p.Name}]"));
-            string columnString = string.Join(",", type.GetProperties().Select(p => $"[{p.GetColumnName()}]"));
-            string sql = $"select {columnString} from [{type.Name}]";
+
+            #region 使用泛型缓存之前:
+            /*如果放在这里每次都要做反射去拼装sql，
+             * 如果把这一步到GenericSqlHelper<T>泛型里，
+             * 利用静态构造函数,对于相同的类，只会在第一次时去做反射拼装sql,在第一次做完之后，结果就会被缓存起来，
+             * 当下次再有相同的类做此操作时就可以直接去拿第一次的结果,无需在去做反射拼装sql
+             * 泛型+反射 做缓存
+             */
+            //string columnString = string.Join(",", type.GetProperties().Select(p => $"[{p.Name}]"));//使用特性之前
+            //string columnString = string.Join(",", type.GetProperties().Select(p => $"[{p.GetColumnName()}]"));//使用特性之后
+            //string sql = $"select {columnString} from [{type.Name}]";
+            #endregion
+            #region 使用泛型缓存之后
+            string sql = GenericSqlHelper<T>.FindAllSql;
+            #endregion
             List<T> list = new List<T>();
             using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
