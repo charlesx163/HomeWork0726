@@ -5,11 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\HomeWork0726.Common\HomeWork0726.Common.csproj" />
+    <ProjectReference Include="..\HomeWork0726.DateAccess\HomeWork0726.DateAccess.csproj" />
   </ItemGroup>
 
 </Project>
