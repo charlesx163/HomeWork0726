@@ -24,6 +24,12 @@ namespace HomeWork0726.DateAccess
         {
             Type type = typeof(T);
             #region 使用泛型缓存之前
+            /*如果放在这里每次都要做反射去拼装sql，
+             * 如果把这一步到GenericSqlHelper<T>泛型里，
+             * 利用静态构造函数,对于相同的类，只会在第一次时去做反射拼装sql,在第一次做完之后，结果就会被缓存起来，
+             * 当下次再有相同的类做此操作时就可以直接去拿第一次的结果,无需在去做反射拼装sql
+             * 泛型+反射 做缓存
+             */
             //string columnString = string.Join(",", type.GetProperties().Select(p => $"[{p.Name}]"));mdoel与数据库实体一致不用使用特性
             //string columnString = string.Join(",", type.GetProperties().Select(p => $"[{p.GetColumnName()}]")); //mdoel字段与数据库实体一致,使用特性
             //string sql = $"select {columnString} from [{type.Name}] where Id={id}";
@@ -31,7 +37,7 @@ namespace HomeWork0726.DateAccess
             #region 使用泛型缓存之后
             string sql = $"{GenericSqlHelper<T>.FindSingleSql}{id}";
             #endregion
-            T t = (T)Activator.CreateInstance(type);
+            T t = null;//(T)Activator.CreateInstance(type);
             using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
                 SqlCommand command = new SqlCommand(sql, conn);
