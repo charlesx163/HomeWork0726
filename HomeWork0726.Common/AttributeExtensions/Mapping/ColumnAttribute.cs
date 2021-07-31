@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HomeWork0726.Model.AttributeExtensions
+namespace HomeWork0726.Common.AttributeExtensions.Mapping
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class ColumnAttribute:Attribute

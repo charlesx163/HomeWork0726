@@ -1,4 +1,5 @@
-﻿using HomeWork0726.Model.AttributeExtensions;
+﻿using HomeWork0726.Common.AttributeExtensions.Mapping;
+using HomeWork0726.Common.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;

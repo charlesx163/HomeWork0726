@@ -1,10 +1,8 @@
 ﻿using HomeWork0726.DateAccess;
+using HomeWork0726.Factory;
 using HomeWork0726.Model.Entities;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 
 namespace HomeWork0726
 {
@@ -18,10 +16,10 @@ namespace HomeWork0726
             {
                 var _Configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json", true, true).Build();
                 var conn = _Configuration.GetConnectionString("Study");
-                BaseRepository baseRepository = new BaseRepository();
-                Company c = baseRepository.Find<Company>(1);
-                //c.Name = "Honda";
-                //baseRepository.Update<Company>(c);
+                IBaseDAL dal = DALFactory.CreateInstance();
+                Company c = dal.Find<Company>(1);
+                c.Name = "";
+                dal.Update<Company>(c);
             }
             catch(Exception e)
             {

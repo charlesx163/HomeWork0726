@@ -1,10 +1,8 @@
 ﻿using HomeWork0726.Common;
-using HomeWork0726.Model;
-using HomeWork0726.Model.AttributeExtensions;
-using Microsoft.Extensions.Configuration;
+using HomeWork0726.Common.AttributeExtensions;
+using HomeWork0726.Common.Model;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -12,7 +10,7 @@ using System.Linq;
 namespace HomeWork0726.DateAccess
 {
 
-    public class BaseRepository
+    public class BaseDAL:IBaseDAL
     {
         private static string ConnectionString = StaticConstant.SqlConnString;
 
@@ -69,6 +67,10 @@ namespace HomeWork0726.DateAccess
         /// <param name="t"></param>
         public void Update<T>(T t) where T:BaseModel
         {
+            if(!t.Validate<T>())
+            {
+                throw new Exception("数据不正确");
+            }
             Type type = typeof(T);
             var properties = type.GetProperties().Where(p => !p.Name.Equals("Id"));
             var paras = properties.Select(p => new SqlParameter($"@{p.GetColumnName()}", p.GetValue(t) ?? DBNull.Value));
