@@ -124,15 +124,29 @@ namespace HomeWork0726.DateAccess
             var paras = properties.Select(p => new SqlParameter($"@{p.GetColumnName()}", p.GetValue(t) ?? DBNull.Value));
             string ColumnName = string.Join(",", properties.Select(p => $"[{p.GetColumnName()}]=@{p.GetColumnName()}"));
             string sql = $"UPDATE [{type.Name}] SET {ColumnName} where Id={t.Id}";
-            using (SqlConnection conn = new SqlConnection(ConnectionString))
-            {
-                SqlCommand comm = new SqlCommand(sql, conn);
-                comm.Parameters.AddRange(paras.ToArray());
-                conn.Open();
-                var i = comm.ExecuteNonQuery();
-                if (i == 0)
-                    throw new Exception("the data does not exeit in the database");
-            }
+
+            #region 使用委托之前
+            //using (SqlConnection conn = new SqlConnection(ConnectionString))
+            //{
+            //    SqlCommand comm = new SqlCommand(sql, conn);
+            //    comm.Parameters.AddRange(paras.ToArray());
+            //    conn.Open();
+            //    var i = comm.ExecuteNonQuery();
+            //    if (i == 0)
+            //        throw new Exception("the data does not exeit in the database");
+            //}
+            #endregion
+            #region 使用委托
+            Func<SqlCommand,int> func = (command) =>{
+                command.Parameters.AddRange(paras.ToArray());
+                var i = command.ExecuteNonQuery();
+                return i;
+            };
+
+            var reslut = InternalExcute<int>(sql,func);
+            if (reslut == 0)
+                throw new Exception("the data does not exeit in the database");
+            #endregion
         }
 
         #region
