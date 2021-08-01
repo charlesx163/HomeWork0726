@@ -38,15 +38,29 @@ namespace HomeWork0726.DateAccess
             string sql = $"{GenericSqlHelper<T>.FindSingleSql}{id}";
             #endregion
             T t = null;//(T)Activator.CreateInstance(type);
-            using (SqlConnection conn = new SqlConnection(ConnectionString))
-            {
-                SqlCommand command = new SqlCommand(sql, conn);
-                conn.Open();
+
+            #region 使用委托之前
+            //using (SqlConnection conn = new SqlConnection(ConnectionString))
+            //{
+            //    SqlCommand command = new SqlCommand(sql, conn);
+            //    conn.Open();
+            //    SqlDataReader reader = command.ExecuteReader();
+            //    var list = this.ReaderToList<T>(reader);
+            //    t = list.FirstOrDefault();
+            //    return t;
+            //}
+            #endregion
+
+            #region 使用委托
+            Func<SqlCommand, T> func = (command) => {
                 SqlDataReader reader = command.ExecuteReader();
                 var list = this.ReaderToList<T>(reader);
                 t = list.FirstOrDefault();
                 return t;
-            }
+            };
+            var result = InternalExcute<T>(sql,func);
+            return result;
+            #endregion
         }
 
         /// <summary>
@@ -73,14 +87,25 @@ namespace HomeWork0726.DateAccess
             string sql = GenericSqlHelper<T>.FindAllSql;
             #endregion
             List<T> list = new List<T>();
-            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            #region 使用委托前
+            //using (SqlConnection conn = new SqlConnection(ConnectionString))
+            //{
+            //    SqlCommand comm = new SqlCommand(sql, conn);
+            //    conn.Open();
+            //    SqlDataReader reader = comm.ExecuteReader();
+            //    list = this.ReaderToList<T>(reader);
+            //}
+            #endregion
+            #region 使用委托
+            Func<SqlCommand, List<T>> func = (command) =>
             {
-                SqlCommand comm = new SqlCommand(sql, conn);
-                conn.Open();
-                SqlDataReader reader = comm.ExecuteReader();
-                list = this.ReaderToList<T>(reader);
-            }
-            return list;
+                SqlDataReader reader = command.ExecuteReader();
+                var list = this.ReaderToList<T>(reader);
+                return list;
+            };
+            var resultList = InternalExcute<List<T>>(sql, func);
+            #endregion
+            return resultList;
         }
 
         /// <summary>
@@ -133,6 +158,30 @@ namespace HomeWork0726.DateAccess
         private string GetSql(int? Id)
         {
             return string.Empty;
+        }
+
+        //通过委托去掉访问数据的重复的代码
+        private T InternalExcute<T>(string sql, Func<SqlCommand,T> func)
+        {
+            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            {
+                conn.Open();
+                SqlTransaction transaction =conn.BeginTransaction();
+                try
+                {
+                    SqlCommand comm = new SqlCommand(sql, conn);
+                    comm.Transaction = transaction;
+                    T result = func.Invoke(comm);
+                    transaction.Commit();
+                    return result;
+                }
+                catch(Exception e)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+                
+            }
         }
         #endregion
     }
